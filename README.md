@@ -22,6 +22,7 @@ For a `.strm` item, Emby normally has no technical media info unless it probes t
         <height>2160</height>
         <bitrate>15000000</bitrate>
         <framerate>23.976</framerate>
+        <durationinseconds>6584.3</durationinseconds>
         <hdrtype>hdr10</hdrtype>
       </video>
       <audio>
@@ -41,7 +42,7 @@ For a `.strm` item, Emby normally has no technical media info unless it probes t
 </movie>
 ```
 
-`<bitrate>` on `<audio>`, and `<totalbitrate>`/`<size>` on `<fileinfo>`, are optional — video/audio/subtitle tracks are populated without them, just without the item-level fields described below.
+`<durationinseconds>` on `<video>`, `<bitrate>` on `<audio>`, and `<totalbitrate>`/`<size>` on `<fileinfo>`, are optional — video/audio/subtitle tracks are populated without them, just without the corresponding item-level field described below.
 
 ## Features
 
