@@ -28,19 +28,25 @@ For a `.strm` item, Emby normally has no technical media info unless it probes t
         <codec>eac3</codec>
         <channels>6</channels>
         <language>eng</language>
+        <bitrate>768000</bitrate>
       </audio>
       <subtitle>
         <codec>subrip</codec>
         <language>eng</language>
       </subtitle>
     </streamdetails>
+    <totalbitrate>17034152</totalbitrate>
+    <size>14427927184</size>
   </fileinfo>
 </movie>
 ```
 
+`<bitrate>` on `<audio>`, and `<totalbitrate>`/`<size>` on `<fileinfo>`, are optional — video/audio/subtitle tracks are populated without them, just without the item-level fields described below.
+
 ## Features
 
-- Populates video codec/resolution/bitrate/framerate/HDR type, audio tracks (codec/channels/language), and subtitle tracks (codec/language/forced/hearing-impaired) from the `.nfo`
+- Populates video codec/resolution/bitrate/framerate/HDR type, audio tracks (codec/channels/bitrate/language), and subtitle tracks (codec/language/forced/hearing-impaired) from the `.nfo`
+- Also populates the item's own resolution, duration, total bitrate, and file size, so Emby's native HD/4K filters and sorting by duration/bitrate work correctly for `.strm` items
 - Applies info as soon as a `.strm` item is scanned into the library
 - A daily scheduled task catches up on items the event path missed (e.g. items added before the plugin was installed, or before their `.nfo` existed)
 - An on-demand task can force a full reprocess of every item, useful after a `.nfo` schema change that should be reflected on already-processed items
