@@ -47,8 +47,8 @@ namespace StrmProbeNfo
 
             try
             {
-                var streams = NfoParser.ParseStreamDetails(nfoPath);
-                if (streams.Count == 0)
+                var parsed = NfoParser.Parse(nfoPath);
+                if (parsed.Streams.Count == 0)
                 {
                     logger.Warn("StrmProbeNfo - {0} parsed to zero streams, skipping", nfoPath);
                     return false;
@@ -59,10 +59,35 @@ namespace StrmProbeNfo
                 // (confirmed empirically against a real scanned library,
                 // 2026-09-29), so SaveMediaStreams's delete-all-by-itemId
                 // behavior only ever touches this exact item's own rows.
-                itemRepository.SaveMediaStreams(item.InternalId, streams, CancellationToken.None);
+                itemRepository.SaveMediaStreams(item.InternalId, parsed.Streams, CancellationToken.None);
+
+                // Item-level fields (MediaItems table, not MediaStreams2) that
+                // native probing would otherwise set - SaveMediaStreams never
+                // touches these, they need their own SaveItem call.
+                if (parsed.Width.HasValue)
+                {
+                    item.Width = parsed.Width.Value;
+                }
+                if (parsed.Height.HasValue)
+                {
+                    item.Height = parsed.Height.Value;
+                }
+                if (parsed.RunTimeTicks.HasValue)
+                {
+                    item.RunTimeTicks = parsed.RunTimeTicks.Value;
+                }
+                if (parsed.TotalBitrate.HasValue)
+                {
+                    item.TotalBitrate = parsed.TotalBitrate.Value;
+                }
+                if (parsed.Size.HasValue)
+                {
+                    item.Size = parsed.Size.Value;
+                }
+                itemRepository.SaveItem(item, CancellationToken.None);
 
                 logger.Info("StrmProbeNfo - saved {0} stream(s) for {1} (item id {2}) from {3}",
-                    streams.Count, item.Path, item.InternalId, nfoPath);
+                    parsed.Streams.Count, item.Path, item.InternalId, nfoPath);
                 return true;
             }
             catch (Exception ex)
