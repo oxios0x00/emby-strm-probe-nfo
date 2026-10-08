@@ -1,7 +1,10 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace StrmProbeNfo
@@ -59,7 +62,24 @@ namespace StrmProbeNfo
                 // (confirmed empirically against a real scanned library,
                 // 2026-09-29), so SaveMediaStreams's delete-all-by-itemId
                 // behavior only ever touches this exact item's own rows.
-                itemRepository.SaveMediaStreams(item.InternalId, parsed.Streams, CancellationToken.None);
+                //
+                // That same full replace would also wipe external streams
+                // (sidecar .srt files that Emby or a subtitle plugin added
+                // and registered on the item), so keep them and append them
+                // after the .nfo streams, with indexes that cannot collide.
+                var streams = new List<MediaStream>(parsed.Streams);
+                var nextIndex = streams.Count == 0 ? 0 : streams.Max(s => s.Index) + 1;
+                var existing = item.GetMediaStreams();
+                if (existing != null)
+                {
+                    foreach (var external in existing.Where(s => s.IsExternal).OrderBy(s => s.Index))
+                    {
+                        external.Index = nextIndex++;
+                        streams.Add(external);
+                    }
+                }
+
+                itemRepository.SaveMediaStreams(item.InternalId, streams, CancellationToken.None);
 
                 // Item-level fields (MediaItems table, not MediaStreams2) that
                 // native probing would otherwise set - SaveMediaStreams never
